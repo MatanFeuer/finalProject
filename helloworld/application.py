@@ -10,6 +10,18 @@ import simplejson as json
 
 application = Flask(__name__)
 
+@application.route('/upload_image' , methods=['POST'])
+def uploadImage():
+    mybucket = 'awsfinalprojectmatan'
+    filobject = request.files['img']
+    s3 = boto3.resource('s3', region_name='eu-central-1')
+    date_time = datetime.now()
+    dt_string = date_time.strftime("%d-%m-%Y-%H-%M-%S")
+    filename = "%s.jpg" % dt_string
+    s3.Bucket(mybucket).upload_fileobj(filobject, filename, ExtraArgs={'ACL': 'public-read', 'ContentType': 'image/jpeg'})
+    imageUrl='https://awsfinalprojectmatan.s3.amazonaws.com/%s'%filename
+    return {"imageUrl": imageUrl}
+
 @application.route('/', methods=['GET'])
 def get():
     return Response(json.dumps({'Output': 'Hello World'}), mimetype='application/json', status=200)
