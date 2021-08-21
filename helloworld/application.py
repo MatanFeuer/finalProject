@@ -10,6 +10,32 @@ import simplejson as json
 
 application = Flask(__name__)
 
+@application.route('/comp_face/<source_image>/<target_image>', methods=['GET'])
+def compare_face(source_image, target_image):
+    # change region and bucket accordingly
+    region = 'us-east-1'
+    bucket_name = 'final-project-reko'
+	
+    rekognition = boto3.client("rekognition", region)
+    response = rekognition.compare_faces(
+        SourceImage={
+    		"S3Object": {
+    			"Bucket": bucket_name,
+    			"Name":source_image,
+    		}
+    	},
+    	TargetImage={
+    		"S3Object": {
+    			"Bucket": bucket_name,
+    			"Name": target_image,
+    		}
+    	},
+		# play with the minimum level of similarity
+        SimilarityThreshold=50,
+    )
+    # return 0 if below similarity threshold
+    return json.dumps(response['FaceMatches'] if response['FaceMatches'] != [] else [{"Similarity": 0.0}])
+
 @application.route('/upload_image' , methods=['POST'])
 def uploadImage():
     mybucket = 'awsfinalprojectmatan'
